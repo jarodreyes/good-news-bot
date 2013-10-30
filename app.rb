@@ -14,7 +14,7 @@ set :static, true
 set :root, File.dirname(__FILE__)
 
 DataMapper::Logger.new(STDOUT, :debug)
-DataMapper::setup(:default, ENV['DATABASE_URL'] || 'postgres://localhost/my_database')
+DataMapper::setup(:default, ENV['DATABASE_URL'] || 'postgres://localhost/mydb')
 
 class VerifiedUser
   include DataMapper::Resource
@@ -54,6 +54,10 @@ before do
     @error = true
   end
 
+end
+
+get "/" do
+  haml :index
 end
 
 def sendMessage(from, to, body)

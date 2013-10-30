@@ -11,40 +11,35 @@
     / Le styles
     %link{:href => "/css/bootstrap.css", :rel => "stylesheet"}/
     :css
-      body {
-        padding-top: 60px;
-        padding-bottom: 40px;
-      }
       .sidebar-nav {
         padding: 9px 0;
       }
-    %link{:href => "/css/bootstrap-responsive.css", :rel => "stylesheet"}/
     / Le fav and touch icons
     %link{:href => "images/favicon.ico", :rel => "shortcut icon"}/
     %link{:href => "images/apple-touch-icon.png", :rel => "apple-touch-icon"}/
     %link{:href => "images/apple-touch-icon-72x72.png", :rel => "apple-touch-icon", :sizes => "72x72"}/
-    %link{:href => "images/apple-touch-icon-114x114.png", :rel => "apple-touch-icon", :sizes => "114x114"}/
+    %link{:href => "images/apple-touch-icon-114x114.png", :rel => "apple-touch-icon", :sssizes => "114x114"}/
   %body
-    .navbar.navbar-fixed-top
-      .navbar-inner
-        .container-fluid
-          %a.btn.btn-navbar{"data-target" => ".nav-collapse", "data-toggle" => "collapse"}
-            %span.icon-bar
-            %span.icon-bar
-            %span.icon-bar
-          %a.brand{:href => "#"} Project name
-          .nav-collapse
-            %ul.nav
-              %li.active
-                %a{:href => "#"} Home
-              %li
-                %a{:href => "#about"} About
-              %li
-                %a{:href => "#contact"} Contact
-            %p.navbar-text.pull-right
-              Logged in as
-              %a{:href => "#"} username
-          / /.nav-collapse
+    %nav.navbar.navbar-default{:role => "navigation"}
+      .navbar-header
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        </button>
+        %a.navbar-brand{:href => "#"} Brand
+      .collapse.navbar-collapse.navbar-ex1-collapse
+        %ul.nav.navbar-nav
+          %li.active
+            %a{:href => "#"} Home
+          %li
+            %a{:href => "#about"} About
+          %li
+            %a{:href => "#contact"} Contact
+        %p.navbar-text.pull-right
+          Logged in as
+          %a{:href => "#"} username
     #content  
       =yield
     /
@@ -52,20 +47,20 @@
       \==================================================
     / Placed at the end of the document so the pages load faster
     %script{:src => "/js/lib/jquery-1.7.1.min.js"}
-    %script{:data-main => "/js/main", :src => "/js/lib/require.min.js"}
     %script{:src => "/js/lib/underscore.js"}
     %script{:src => "/js/lib/backbone.js"}
     %script{:src => "/js/lib/backbone.marionette.min.js"}
+    <script data-main="/js/main" src="/js/lib/require.min.js" />
     / Turn on any bootstrap js by un-committing
-    / %script{:src => "/js/bootstrap-transition.js"}
-    / %script{:src => "/js/bootstrap-alert.js"}
-    / %script{:src => "/js/bootstrap-modal.js"}
-    / %script{:src => "/js/bootstrap-dropdown.js"}
-    / %script{:src => "/js/bootstrap-scrollspy.js"}
-    / %script{:src => "/js/bootstrap-tab.js"}
-    / %script{:src => "/js/bootstrap-tooltip.js"}
-    / %script{:src => "/js/bootstrap-popover.js"}
-    / %script{:src => "/js/bootstrap-button.js"}
-    / %script{:src => "/js/bootstrap-collapse.js"}
-    / %script{:src => "/js/bootstrap-carousel.js"}
-    / %script{:src => "/js/bootstrap-typeahead.js"}  
+    / %script{:src => "/js/lib/bootstrap/bootstrap-transition.js"}
+    / %script{:src => "/js/lib/bootstrap/bootstrap-alert.js"}
+    / %script{:src => "/js/lib/bootstrap/bootstrap-modal.js"}
+    / %script{:src => "/js/lib/bootstrap/bootstrap-dropdown.js"}
+    / %script{:src => "/js/lib/bootstrap/bootstrap-scrollspy.js"}
+    / %script{:src => "/js/lib/bootstrap/bootstrap-tab.js"}
+    / %script{:src => "/js/lib/bootstrap/bootstrap-tooltip.js"}
+    / %script{:src => "/js/lib/bootstrap/bootstrap-popover.js"}
+    / %script{:src => "/js/lib/bootstrap/bootstrap-button.js"}
+    %script{:src => "/js/lib/bootstrap/bootstrap-collapse.js"}
+    / %script{:src => "/js/lib/bootstrap/bootstrap-carousel.js"}
+    / %script{:src => "/js/lib/bootstrap/bootstrap-typeahead.js"}  
