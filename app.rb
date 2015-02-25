@@ -14,17 +14,13 @@ set :static, true
 set :root, File.dirname(__FILE__)
 
 DataMapper::Logger.new(STDOUT, :debug)
-DataMapper::setup(:default, ENV['DATABASE_URL'] || 'postgres://localhost/mydb')
+DataMapper::setup(:default, ENV['DATABASE_URL'] || 'postgres://postgres:postgres@localhost/jreyes')
 
-class VerifiedUser
+class AnonUser
   include DataMapper::Resource
 
   property :id, Serial
-  property :code, String, :length => 10
-  property :name, String
   property :phone_number, String, :length => 30
-  property :verified, Boolean, :default => false
-  property :send_mms, Enum[ 'yes', 'no' ], :default => 'no'
 
   has n, :messages
 
@@ -35,16 +31,15 @@ class Message
 
   property :id, Serial
   property :body, Text
-  property :time, DateTime
-  property :name, String
 
-  belongs_to :verified_user
+  belongs_to :anon_user
 
 end
 DataMapper.finalize
 DataMapper.auto_upgrade!
 
 before do
+  @cowork_number = ENV['COWORK_NUMBER']
   @twilio_number = ENV['TWILIO_NUMBER']
   @client = Twilio::REST::Client.new ENV['TWILIO_ACCOUNT_SID'], ENV['TWILIO_AUTH_TOKEN']
   
@@ -69,34 +64,31 @@ def sendMessage(from, to, body)
   puts message.to
 end
 
+get "/messages" do
+  @messages = Message.all
+  haml :messages
+end
+
 # Register a subscriber through the web and send verification code
-route :get, :post, '/register' do
-  @phone_number = Sanitize.clean(params[:phone_number])
-  if @phone_number.empty?
-    redirect to("/?error=1")
-  end
+route :get, :post, '/sms-register' do
+  @phone_number = Sanitize.clean(params[:From])
+  @body = params[:Body]
+  puts @error
 
-  begin
-    if @error == false
-      user = VerifiedUser.create(
-        :name => params[:name],
-        :phone_number => @phone_number,
-        :send_mms => params[:send_mms]
-      )
-
-      if user.verified == true
-        @phone_number = url_encode(@phone_number)
-        redirect to("/verify?phone_number=#{@phone_number}&verified=1")
-      end
-      totp = ROTP::TOTP.new("drawtheowl")
-      code = totp.now
-      user.code = code
+  if @error == false
+    user = AnonUser.first_or_create(:phone_number => @phone_number)
+    if not @body.nil?
+      user.messages.create(:body => @body)
       user.save
-
-      sendMessage(@twilio_number, @phone_number, "Your verification code is #{code}")
     end
-    erb :register
-  rescue
-    redirect to("/?error=2")
   end
+
+  @msg = "Hi! I am the candy machine. Please let me know what would you like to be in the candy machine next month?"
+  message = @client.account.messages.create(
+    :from => @cowork_number,
+    :to => @phone_number,
+    :body => @msg
+  )
+  puts message.to
+
 end
