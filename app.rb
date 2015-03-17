@@ -159,8 +159,8 @@ route :get, :post, '/tacos' do
           user.tacos.each do |taco|
             order << taco.flavor
           end
-          tacos = order * ","
-          @output = "Looks like you have ordered 3 tacos. Your current order is #{tacos}. Would you like to start over? If so type 'reset'."
+          tacos = order * ", "
+          @output = "Looks like you have already ordered 3 tacos. Your current order is #{tacos}. Would you like to start over? If so type 'reset'."
         end 
         
       else
