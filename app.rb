@@ -118,7 +118,7 @@ route :get, :post, '/sms-register' do
 
 end
 
-$TACOS = ['chicken', 'pork', 'fish', 'vegetarian']
+$TACOS = ['chicken', 'pork', 'fish', 'vegetarian', 'veggie']
 MAX_TACOS = 3
 
 # 3rdSpace Taco Tuesday webhook
