@@ -149,7 +149,11 @@ route :get, :post, '/tacos' do
           user.save
           num_tacos = user.tacos.length
 
-          @output = "One #{@body} coming right up. You have ordered #{num_tacos} taco(s). To order more #{@options}"
+          if user.tacos.length == 3
+            @output = "Awesome I got your full order. Look forward to seeing you at Taco Tuesday. Save the date: 12:00pm on April 7th!"
+          else
+            @output = "One #{@body} coming right up. You have ordered #{num_tacos} taco(s). To order more #{@options}"
+          end
         else
           order = []
           user.tacos.each do |taco|
@@ -184,7 +188,7 @@ route :get, :post, '/tacos' do
         end
       end
     else
-      @output = "Hello 3rd Spacer! Taco Tuesday is coming on April 7th! Free tacos for all! To order (up to 3) tacos, respond to this number. #{@options}"
+      @output = "Hello 3rd Spacer! Taco Tuesday is happening at 12:00pm on April 7th! Free tacos for all! To order (up to 3) tacos, respond to this number. #{@options}"
       @msg2 = "This number was made intelligent using Twilio. See the code at: bit.ly/3rdTacos"
       message = @client.account.messages.create(
         :from => @tacos_number,
