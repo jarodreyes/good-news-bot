@@ -98,7 +98,7 @@ route :get, :post, '/bizcard' do
   Email: jreyes@twilio.com
   Twitter: https://twitter.com/jreyesdesign
 
-  This SMS business card was built in 10 lines of code using Twilio. View the code on Github: http://bit.ly/1P0mjO.
+  This SMS business card was built in 10 lines of code using Twilio. View the code on Github: http://bit.ly/1P0mjOk.
   '
   Twilio::TwiML::Response.new do |r|
     r.Message :to => @outgoing_number do |m|
