@@ -101,7 +101,10 @@ route :get, :post, '/bizcard' do
   This SMS business card was built in 10 lines of code using Twilio. View the code on Github: http://bit.ly/1P0mjO.
   '
   Twilio::TwiML::Response.new do |r|
-    r.Message @message, :to => @outgoing_number
+    r.Message :to => @outgoing_number do |m|
+      m.Body @message
+      m.Media "http://jardiohead.s3.amazonaws.com/profile.jpg"
+    end
   end.text
 end
 
