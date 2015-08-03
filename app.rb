@@ -94,11 +94,12 @@ route :get, :post, '/bizcard' do
 
   @message = 'Jarod Reyes: Documentation at Twilio.com
 
-  Telephone: (206)650-5813
-  Email: jreyes@twilio.com
-  Twitter: https://twitter.com/jreyesdesign
+Telephone: (206)650-5813
+Email: jreyes@twilio.com
+Twitter: https://twitter.com/jreyesdesign
 
-  This SMS business card was built in 10 lines of code using Twilio. View the code on Github: http://bit.ly/1P0mjOk.
+This SMS business card was built in 10 lines of code using Twilio. View the code on Github: http://bit.ly/1P0mjOk.
+It was nice meeting you at #Agile2015!
   '
   Twilio::TwiML::Response.new do |r|
     r.Message :to => @outgoing_number do |m|
