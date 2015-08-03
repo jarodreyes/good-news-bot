@@ -88,6 +88,24 @@ get "/api/tacos.json" do
 end
 
 # Register a subscriber through the web and send verification code
+route :get, :post, '/bizcard' do
+  @phone_number = Sanitize.clean(params[:From])
+  @outgoing_number = params[:Body]
+
+  @message = 'Jarod Reyes: Documentation at Twilio.com
+
+  Telephone: (206)650-5813
+  Email: jreyes@twilio.com
+  Twitter: https://twitter.com/jreyesdesign
+
+  This SMS business card was built in 10 lines of code using Twilio. View the code on Github: http://bit.ly/1P0mjO.
+  '
+  Twilio::TwiML::Response.new do |r|
+    r.Message @message, :to => @outgoing_number
+  end.text
+end
+
+# Register a subscriber through the web and send verification code
 route :get, :post, '/sms-register' do
   @phone_number = Sanitize.clean(params[:From])
   @body = params[:Body]
