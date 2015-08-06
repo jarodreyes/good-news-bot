@@ -105,6 +105,7 @@ It was nice meeting you at #Agile2015!
     r.Message :to => @outgoing_number do |m|
       m.Body @message
       m.Media "http://jardiohead.s3.amazonaws.com/profile.jpg"
+      m.Media "/img/jarod.vcf"
     end
   end.text
 end

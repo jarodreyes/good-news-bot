@@ -1,0 +1,11 @@
+BEGIN:VCARD
+VERSION:4.0
+N:Reyes;Jarod;;;
+FN:Jarod Reyes
+ORG:Twilio
+TITLE:Developer Educator
+PHOTO;MEDIATYPE=image/jpeg:http://jardiohead.s3.amazonaws.com/profile.jpg
+TEL;TYPE=work,voice;VALUE=uri:+1-206-650-5813
+EMAIL:jreyes@twilio.com
+REV:20080424T195243Z
+END:VCARD
