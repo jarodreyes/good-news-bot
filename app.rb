@@ -77,6 +77,55 @@ def sendMessage(from, to, body)
   puts message.to
 end
 
+$FUT = ["http://jardiohead.s3.amazonaws.com/fut.mp3", "http://jardiohead.s3.amazonaws.com/fut1.mp3", "http://jardiohead.s3.amazonaws.com/fut2.mp3", "http://jardiohead.s3.amazonaws.com/fut3.mp3", "http://jardiohead.s3.amazonaws.com/fut4.mp3", "http://jardiohead.s3.amazonaws.com/fut5.mp3"]
+$FAM = ["http://jardiohead.s3.amazonaws.com/fg1.mp3", "http://jardiohead.s3.amazonaws.com/fg3.mp3", "http://jardiohead.s3.amazonaws.com/fg2.mp3"]
+$MONT = ["http://jardiohead.s3.amazonaws.com/mp1.mp3", "http://jardiohead.s3.amazonaws.com/mp3.mp3", "http://jardiohead.s3.amazonaws.com/mp2.mp3", "http://jardiohead.s3.amazonaws.com/mp4.mp3"]
+$BREAK = ["http://jardiohead.s3.amazonaws.com/bc1.mp3", "http://jardiohead.s3.amazonaws.com/bc2.mp3"]
+$SPACE = ["http://jardiohead.s3.amazonaws.com/sb1.mp3", "http://jardiohead.s3.amazonaws.com/sb5.mp3", "http://jardiohead.s3.amazonaws.com/sb6.mp3"]
+
+post "/greg" do
+  # Get phone_number from the incoming GET request from Twilio
+  @phone_number = Sanitize.clean(params[:From])
+  @greeting = "Thank you for calling Greg Veckga's emergency funny reference hotline! Happy Birthday Greg!"
+  @instructions = "To hear a reference from Futurama, Press 1. For Monty Python, Press 2. For Breakfast Club, Press 3. For Space Balls, Press 4. To hear Family Guy, Press 5. To here these options again stay on the line."
+  # Respond with some TwiML to kick-off the survey
+  response = Twilio::TwiML::Response.new do |r|
+    r.Gather :numDigits => '1', :action => '/greg_reference', :method => 'get' do |g|
+      g.Say @greeting, voice: 'alice', language: 'en-US'
+      g.Say @instructions, voice: 'alice', language: 'en-US'
+    end
+    r.Redirect
+  end
+  response.text
+end
+
+get "/greg_reference" do
+  input = params[:Digits]
+  case input
+
+  # Futurama
+  when '1'
+    @audio = $FUT[rand(4)]
+    puts @audio
+  # Monty Python
+  when '2'
+    @audio = $MONT[rand(3)]
+  when '3'
+    @audio = $BREAK[rand(0..1)]
+  when '4'
+    @audio = $SPACE[rand(2)]
+  when '5'
+    @audio = $FAM[rand(2)]
+  else
+    @audio = "https://ia902205.us.archive.org/27/items/ReneVenturosoRickrollVenturoso/RickRoll.mp3"
+  end
+  response = Twilio::TwiML::Response.new do |r|
+    r.Play @audio
+    r.Say "Thank you for calling Greg Veckga's emergency funny hotline."
+    r.Redirect '/greg'
+  end
+  response.text
+end
 get "/messages" do
   @messages = Message.all
   haml :messages
