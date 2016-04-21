@@ -15,7 +15,7 @@ set :static, true
 set :root, File.dirname(__FILE__)
 
 DataMapper::Logger.new(STDOUT, :debug)
-DataMapper::setup(:default, ENV['DATABASE_URL'] || 'postgres://postgres:postgres@localhost/jreyes')
+DataMapper::setup(:default, ENV['DATABASE_URL'] || 'postgres://@localhost/jreyes')
 
 class AnonUser
   include DataMapper::Resource
@@ -82,7 +82,7 @@ $FAM = ["http://jardiohead.s3.amazonaws.com/fg1.mp3", "http://jardiohead.s3.amaz
 $MONT = ["http://jardiohead.s3.amazonaws.com/mp1.mp3", "http://jardiohead.s3.amazonaws.com/mp3.mp3", "http://jardiohead.s3.amazonaws.com/mp2.mp3", "http://jardiohead.s3.amazonaws.com/mp4.mp3"]
 $BREAK = ["http://jardiohead.s3.amazonaws.com/bc1.mp3", "http://jardiohead.s3.amazonaws.com/bc2.mp3"]
 $SPACE = ["http://jardiohead.s3.amazonaws.com/sb1.mp3", "http://jardiohead.s3.amazonaws.com/sb5.mp3", "http://jardiohead.s3.amazonaws.com/sb6.mp3"]
-
+$PRINCE = ["http://jardiohead.s3.amazonaws.com/prince/prince7.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince9.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince2.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince3.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince4.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince5.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince6.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince1.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince8.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince201.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince201.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince201.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince202.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince203.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince204.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince205.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince206.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince207.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince208.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince209.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince210.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince211.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince212.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince213.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince214.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince215.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince216.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince217.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince301.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince302.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince303.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince304.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince305.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince306.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince307.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince308.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince309.mp3"]
 post "/greg" do
   # Get phone_number from the incoming GET request from Twilio
   @phone_number = Sanitize.clean(params[:From])
@@ -126,6 +126,45 @@ get "/greg_reference" do
   end
   response.text
 end
+
+post "/prince" do
+  # Get phone_number from the incoming GET request from Twilio
+  @phone_number = Sanitize.clean(params[:From])
+  @greeting = "Welcome to the place where Prince lives on."
+  @instructions = "To hear Purple Rain press 1, for a random live performance press 2."
+  # Respond with some TwiML to kick-off the survey
+  response = Twilio::TwiML::Response.new do |r|
+    r.Gather :numDigits => '1', :action => '/prince_reference', :method => 'get' do |g|
+      g.Play "http://jardiohead.s3.amazonaws.com/prince/prince-intro.wav"
+    end
+    r.Redirect
+  end
+  response.text
+end
+
+get "/prince_reference" do
+  input = params[:Digits]
+  case input
+
+  # Futurama
+  when '1'
+    @audio = $PRINCE[0]
+  # Futurama
+  when '2'
+    @audio = $PRINCE[rand(36)]
+  else
+    @audio = $PRINCE[1]
+  end
+  response = Twilio::TwiML::Response.new do |r|
+    r.Play @audio
+    r.Play "http://jardiohead.s3.amazonaws.com/prince/rip.wav"
+    r.Redirect '/prince'
+  end
+  response.text
+end
+
+
+
 get "/messages" do
   @messages = Message.all
   haml :messages
