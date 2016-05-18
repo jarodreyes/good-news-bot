@@ -83,6 +83,10 @@ $MONT = ["http://jardiohead.s3.amazonaws.com/mp1.mp3", "http://jardiohead.s3.ama
 $BREAK = ["http://jardiohead.s3.amazonaws.com/bc1.mp3", "http://jardiohead.s3.amazonaws.com/bc2.mp3"]
 $SPACE = ["http://jardiohead.s3.amazonaws.com/sb1.mp3", "http://jardiohead.s3.amazonaws.com/sb5.mp3", "http://jardiohead.s3.amazonaws.com/sb6.mp3"]
 $PRINCE = ["http://jardiohead.s3.amazonaws.com/prince/prince7.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince9.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince2.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince3.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince4.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince5.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince6.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince1.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince8.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince201.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince201.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince201.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince202.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince203.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince204.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince205.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince206.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince207.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince208.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince209.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince210.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince211.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince212.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince213.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince214.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince215.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince216.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince217.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince301.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince302.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince303.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince304.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince305.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince306.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince307.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince308.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince309.mp3"]
+
+$BEER_RECIPE = "http://jardiohead.s3.amazonaws.com/beer-recipe.png"
+$BEER_MAKERS = "http://jardiohead.s3.amazonaws.com/beer-makers.jpg"
+
 post "/greg" do
   # Get phone_number from the incoming GET request from Twilio
   @phone_number = Sanitize.clean(params[:From])
@@ -161,6 +165,21 @@ get "/prince_reference" do
     r.Redirect '/prince'
   end
   response.text
+end
+
+# Register a subscriber through the web and send verification code
+route :get, :post, '/beer' do
+  @phone_number = Sanitize.clean(params[:From])
+
+  @message = 'To the best and the few who do what we do!'
+  Twilio::TwiML::Response.new do |r|
+    r.Message do |m|
+      m.Body @message
+      m.Media $BEER_RECIPE
+      m.Media $BEER_MAKERS
+      # m.Media "http://jardiohead.s3.amazonaws.com/polaris.pdf"
+    end
+  end.text
 end
 
 
