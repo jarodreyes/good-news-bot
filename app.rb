@@ -167,15 +167,15 @@ get "/prince_reference" do
   response.text
 end
 
-# Register a subscriber through the web and send verification code
+# Respond with the beer recipe
 route :get, :post, '/beer' do
   @phone_number = Sanitize.clean(params[:From])
-
+  puts(params);
   @message = 'To the best and the few who do what we do!'
   Twilio::TwiML::Response.new do |r|
     r.Message do |m|
       m.Body @message
-      m.Media $BEER_RECIPE
+      m.Media "http://jardiohead.s3.amazonaws.com/beer-recipe.png"
       m.Media $BEER_MAKERS
       # m.Media "http://jardiohead.s3.amazonaws.com/polaris.pdf"
     end
