@@ -13,6 +13,10 @@ gem "data_mapper"
 gem 'newrelic_rpm'
 
 gem 'json'
+gem 'redditkit', :git => 'http://github.com/samsymons/RedditKit.rb'
+gem 'shotgun'
+
+gem 'rufus-scheduler'
 
 # group :development do
 #   gem 'sqlite3'

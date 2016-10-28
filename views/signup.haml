@@ -12,9 +12,13 @@
           .alert-box.success.hidden Success! Phone number verified :)
           .alert-box.error.alert.hidden Hmmm, something went wrong. Try that again.
       .row
-        .small-2.columns
-          %input.right.inline{:type => "checkbox", :name => "send_mms", :id => "send_mms", :value => "yes"}
-        .small-10.columns
-          %label{:for => "send_mms"} Would you like to see pictures?
+        .small-4.columns
+          %select.right.inline{:name => "frequency"}
+            %option{:value => "30"} Every 30 mins
+            %option{:value => "60"} On the hour
+            %option{:value => "300"} Twice a day
+            %option{:value => "1440"} Once a day
+        .small-8.columns
+          %label{:for => "frequency"} How often do you want good news?
           
-      %input.large.button.expand.regButton{:type => "submit", :name => "submit", :value => "notify me :)"}
+      %input.large.button.expand.regButton{:type => "submit", :name => "submit", :value => "Send Me Good News"}

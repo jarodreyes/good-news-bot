@@ -1,7 +1,6 @@
 require "bundler/setup"
 require "sinatra"
 require "sinatra/multi_route"
-require "data_mapper"
 require "twilio-ruby"
 require 'twilio-ruby/rest/messages'
 require "sanitize"
@@ -9,326 +8,167 @@ require "erb"
 require "rotp"
 require "haml"
 require "json"
+require "redditkit"
+require 'rufus-scheduler'
 include ERB::Util
 
-set :static, true
-set :root, File.dirname(__FILE__)
 
-DataMapper::Logger.new(STDOUT, :debug)
-DataMapper::setup(:default, ENV['DATABASE_URL'] || 'postgres://@localhost/jreyes')
+class MyApp < Sinatra::Application
+  @@scheduler = Rufus::Scheduler.new
 
-class AnonUser
-  include DataMapper::Resource
-
-  property :id, Serial
-  property :phone_number, String, :length => 30
-
-  has n, :messages
-  has n, :tacos
-
-end
-
-class Message
-  include DataMapper::Resource
-
-  property :id, Serial
-  property :body, Text
-
-  belongs_to :anon_user
-
-end
-
-class Taco
-  include DataMapper::Resource
-
-  property :id, Serial
-  property :flavor, Text
-
-  belongs_to :anon_user
-
-end
-DataMapper.finalize
-DataMapper.auto_upgrade!
-
-before do
-  @cowork_number = ENV['COWORK_NUMBER']
-  @tacos_number = ENV['TACOS_NUMBER']
-  @twilio_number = ENV['TWILIO_NUMBER']
-  @client = Twilio::REST::Client.new ENV['TWILIO_ACCOUNT_SID'], ENV['TWILIO_AUTH_TOKEN']
-  
-  if params[:error].nil?
-    @error = false
-  else
-    @error = true
+  configure do
+    set :static, true
+    set :haml, { :ugly=>true }
+    set :root, File.dirname(__FILE__)
   end
 
-end
-
-get "/" do
-  haml :index
-end
-
-def sendMessage(from, to, body)
-  message = @client.account.messages.create(
-    :from => from,
-    :to => to,
-    :body => body
-  )
-  puts message.to
-end
-
-$FUT = ["http://jardiohead.s3.amazonaws.com/fut.mp3", "http://jardiohead.s3.amazonaws.com/fut1.mp3", "http://jardiohead.s3.amazonaws.com/fut2.mp3", "http://jardiohead.s3.amazonaws.com/fut3.mp3", "http://jardiohead.s3.amazonaws.com/fut4.mp3", "http://jardiohead.s3.amazonaws.com/fut5.mp3"]
-$FAM = ["http://jardiohead.s3.amazonaws.com/fg1.mp3", "http://jardiohead.s3.amazonaws.com/fg3.mp3", "http://jardiohead.s3.amazonaws.com/fg2.mp3"]
-$MONT = ["http://jardiohead.s3.amazonaws.com/mp1.mp3", "http://jardiohead.s3.amazonaws.com/mp3.mp3", "http://jardiohead.s3.amazonaws.com/mp2.mp3", "http://jardiohead.s3.amazonaws.com/mp4.mp3"]
-$BREAK = ["http://jardiohead.s3.amazonaws.com/bc1.mp3", "http://jardiohead.s3.amazonaws.com/bc2.mp3"]
-$SPACE = ["http://jardiohead.s3.amazonaws.com/sb1.mp3", "http://jardiohead.s3.amazonaws.com/sb5.mp3", "http://jardiohead.s3.amazonaws.com/sb6.mp3"]
-$PRINCE = ["http://jardiohead.s3.amazonaws.com/prince/prince7.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince9.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince2.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince3.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince4.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince5.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince6.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince1.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince8.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince201.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince201.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince201.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince202.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince203.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince204.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince205.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince206.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince207.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince208.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince209.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince210.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince211.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince212.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince213.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince214.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince215.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince216.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince217.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince301.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince302.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince303.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince304.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince305.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince306.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince307.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince308.mp3", "http://jardiohead.s3.amazonaws.com/prince/prince309.mp3"]
-
-$BEER_RECIPE = "http://jardiohead.s3.amazonaws.com/beer-recipe.png"
-$BEER_MAKERS = "http://jardiohead.s3.amazonaws.com/beer-makers.jpg"
-
-post "/greg" do
-  # Get phone_number from the incoming GET request from Twilio
-  @phone_number = Sanitize.clean(params[:From])
-  @greeting = "Thank you for calling Greg Veckga's emergency funny reference hotline! Happy Birthday Greg!"
-  @instructions = "To hear a reference from Futurama, Press 1. For Monty Python, Press 2. For Breakfast Club, Press 3. For Space Balls, Press 4. To hear Family Guy, Press 5. To here these options again stay on the line."
-  # Respond with some TwiML to kick-off the survey
-  response = Twilio::TwiML::Response.new do |r|
-    r.Gather :numDigits => '1', :action => '/greg_reference', :method => 'get' do |g|
-      g.Say @greeting, voice: 'alice', language: 'en-US'
-      g.Say @instructions, voice: 'alice', language: 'en-US'
-    end
-    r.Redirect
-  end
-  response.text
-end
-
-get "/greg_reference" do
-  input = params[:Digits]
-  case input
-
-  # Futurama
-  when '1'
-    @audio = $FUT[rand(4)]
-    puts @audio
-  # Monty Python
-  when '2'
-    @audio = $MONT[rand(3)]
-  when '3'
-    @audio = $BREAK[rand(0..1)]
-  when '4'
-    @audio = $SPACE[rand(2)]
-  when '5'
-    @audio = $FAM[rand(2)]
-  else
-    @audio = "https://ia902205.us.archive.org/27/items/ReneVenturosoRickrollVenturoso/RickRoll.mp3"
-  end
-  response = Twilio::TwiML::Response.new do |r|
-    r.Play @audio
-    r.Say "Thank you for calling Greg Veckga's emergency funny hotline."
-    r.Redirect '/greg'
-  end
-  response.text
-end
-
-post "/prince" do
-  # Get phone_number from the incoming GET request from Twilio
-  @phone_number = Sanitize.clean(params[:From])
-  @greeting = "Welcome to the place where Prince lives on."
-  @instructions = "To hear Purple Rain press 1, for a random live performance press 2."
-  # Respond with some TwiML to kick-off the survey
-  response = Twilio::TwiML::Response.new do |r|
-    r.Gather :numDigits => '1', :action => '/prince_reference', :method => 'get' do |g|
-      g.Play "http://jardiohead.s3.amazonaws.com/prince/prince-intro.wav"
-    end
-    r.Redirect
-  end
-  response.text
-end
-
-get "/prince_reference" do
-  input = params[:Digits]
-  case input
-
-  # Futurama
-  when '1'
-    @audio = $PRINCE[0]
-  # Futurama
-  when '2'
-    @audio = $PRINCE[rand(36)]
-  else
-    @audio = $PRINCE[1]
-  end
-  response = Twilio::TwiML::Response.new do |r|
-    r.Play @audio
-    r.Play "http://jardiohead.s3.amazonaws.com/prince/rip.wav"
-    r.Redirect '/prince'
-  end
-  response.text
-end
-
-# Respond with the beer recipe
-route :get, :post, '/beer' do
-  puts(params);
-  @message = 'To the best and the few who do what we do!'
-  Twilio::TwiML::Response.new do |r|
-    r.Message do |m|
-      m.Body @message
-      m.Media "http://jardiohead.s3.amazonaws.com/beer-recipe.png"
-      m.Media $BEER_MAKERS
-      # m.Media "http://jardiohead.s3.amazonaws.com/polaris.pdf"
-    end
-  end.text
-end
-
-
-
-get "/messages" do
-  @messages = Message.all
-  haml :messages
-end
-
-get "/api/tacos.json" do
-  @tacos = Taco.all
-  @tacos.to_json
-end
-
-# Register a subscriber through the web and send verification code
-route :get, :post, '/bizcard' do
-  @phone_number = Sanitize.clean(params[:From])
-  @outgoing_number = params[:Body]
-
-  @message = 'Jarod Reyes: Documentation at Twilio.com
-
-Telephone: (206)650-5813
-Email: jreyes@twilio.com
-Twitter: https://twitter.com/jreyesdesign
-
-This SMS business card was built in 10 lines of code using Twilio. View the code on Github: http://bit.ly/1P0mjOk.
-It was nice meeting you at #Agile2015!
-  '
-  Twilio::TwiML::Response.new do |r|
-    r.Message :to => @outgoing_number do |m|
-      m.Body @message
-      m.Media "http://jardiohead.s3.amazonaws.com/profile.jpg"
-      m.Media "/img/jarod.vcf"
-    end
-  end.text
-end
-
-# Register a subscriber through the web and send verification code
-route :get, :post, '/sms-register' do
-  @phone_number = Sanitize.clean(params[:From])
-  @body = params[:Body]
-  puts @error
-
-  if @error == false
-    user = AnonUser.first_or_create(:phone_number => @phone_number)
-    if not @body.nil?
-      user.messages.create(:body => @body)
-      user.save
-    end
-  end
-
-  @msg = "Hi! I am the Twilio-powered candy machine. Please let me know what would you like to have in the candy machine next month?"
-  message = @client.account.messages.create(
-    :from => @cowork_number,
-    :to => @phone_number,
-    :body => @msg
-  )
-  puts message.to
-  @msg2 = "This number was made intelligent using Twilio. See the code at: bit.ly/3rdCandy"
-  message = @client.account.messages.create(
-    :from => @cowork_number,
-    :to => @phone_number,
-    :body => @msg2
-  )
-  puts message.to
-
-end
-
-$TACOS = ['chicken', 'pork', 'fish', 'vegetarian', 'veggie']
-MAX_TACOS = 3
-
-# 3rdSpace Taco Tuesday webhook
-# Phone Number: 6692382267
-# Register a subscriber through the web and send verification code
-route :get, :post, '/tacos' do
-  @phone_number = Sanitize.clean(params[:From])
-  @body = params[:Body].downcase
-  puts "******************* ERROR: #{@error} **********************"
-  puts "******************* BODY: #{@body} **********************"
-
-  @options = "Please type: 'chicken', 'pork', 'fish' or 'vegetarian'"
-
-  if @error == false
-    user = AnonUser.first_or_create(:phone_number => @phone_number)
-    if not @body.nil?
-      number_choice = @body.is_a? Integer
-
-      # Is this a taco order?
-      if $TACOS.include? @body or number_choice
-
-        if number_choice
-          @body = $TACOS[@body]
-        end
-        # Check and see how many tacos the person requested.
-        if user.tacos.length < 3
-          user.tacos.create(:flavor => @body)
-          user.save
-          num_tacos = user.tacos.length
-
-          if user.tacos.length == 3
-            @output = "Awesome I got your full order. Look forward to seeing you at Taco Tuesday. Save the date: 12:00pm on April 7th!"
-          else
-            @output = "One #{@body} coming right up. You have ordered #{num_tacos} taco(s). To order more #{@options}"
-          end
-        else
-          order = []
-          user.tacos.each do |taco|
-            order << taco.flavor
-          end
-          tacos = order * ", "
-          @output = "Looks like you have already ordered 3 tacos. Your current order is #{tacos}. Would you like to start over? If so type 'reset'."
-        end 
-        
-      else
-
-        # Since this isn't a taco order it must be something else.
-        case @body
-
-        # delete taco order and start over.
-        when 'reset'
-          user.tacos.all.destroy
-          @output = "Okay you're order has been reset. Let's start over! What kind of tacos would you like? #{@options}"
-
-        # Welcome the 3rdspacer
-        when 'hello'
-          @output = "Hello 3rd Spacer! Taco Tuesday is happening at 12:00pm on April 7th! Free tacos for all! To order (up to 3) tacos, respond to this number. #{@options}"
-          @msg2 = "This number was made intelligent using Twilio. See the code at: bit.ly/3rdTacos"
-          message = @client.account.messages.create(
-            :from => @tacos_number,
-            :to => @phone_number,
-            :body => @msg2
-          )
-          puts message.to
-        else
-          @output = "Sorry, not sure what kind of taco that is. #{@options}"
-        end
-      end
+  before do
+    @news_number = ENV['NEWS_NUMBER']
+    @client = Twilio::REST::Client.new ENV['TWILIO_ACCOUNT_SID'], ENV['TWILIO_AUTH_TOKEN']
+    if params[:error].nil?
+      @error = false
     else
-      @output = "Hello 3rd Spacer! Taco Tuesday is happening at 12:00pm on April 7th! Free tacos for all! To order (up to 3) tacos, respond to this number. #{@options}"
-      @msg2 = "This number was made intelligent using Twilio. See the code at: bit.ly/3rdTacos"
-      message = @client.account.messages.create(
-        :from => @tacos_number,
-        :to => @phone_number,
-        :body => @msg2
-      )
-      puts message.to
+      @error = true
+    end
+
+  end
+
+  get "/update" do
+    update_reddit()
+    haml :index
+  end
+
+  get "/signup" do
+    haml :signup
+  end
+
+  get "/success" do
+    haml :success
+  end
+  route :get, :post, '/pull-news' do 
+    phone_number = Sanitize.clean(params[:From])
+    user = VerifiedUser.first_or_create(:phone_number => phone_number)
+    post = getTheNews(phone_number)
+    Twilio::TwiML::Response.new do |r|
+      r.Message do |m|
+        m.Body "#{post.title} - #{post.url}"
+        m.Media "#{post.thumbnail}"
+      end
+    end.text
+  end
+
+  def getTheNews(phone_number)
+    user = VerifiedUser.first(:phone_number => phone_number)
+    posts = Post.all
+
+    posts.each_with_index do |post, i|
+      user_post = user.posts.get(post.id)
+      if user_post.nil? || i == posts.size
+        user.posts << post
+        user.save!
+        return post
+      else
+        next
+      end
     end
   end
 
-  Twilio::TwiML::Response.new do |r|
-    r.Message @output
-  end.text
+  def parse_results(list)
+    list.each do |post|
+      exists = Post.get(post.id)
+      img = post.image_link? ? post.url : post.thumbnail 
+      if post.over_18 == false && exists.nil?
+        Post.create!(
+          :id => post.id, 
+          :thumbnail => img,
+          :title => post.title,
+          :permalink => post.permalink,
+          :url => post.url)
+      end
+    end
+  end
+
+  # Register a subscriber through the web and send verification code
+  route :get, :post, '/register' do
+    @phone_number = Sanitize.clean(params[:phone_number])
+    
+    if @phone_number.empty?
+      redirect to("/?error=1")
+    else
+      if @phone_number.length <= 10
+        string = '+1'
+        @phone_number = string + @phone_number
+      end
+    end
+
+    begin
+      p "begin"
+      if @error == false
+        p "Error: #{@error}"
+        user = VerifiedUser.create(
+          :name => params[:name],
+          :phone_number => @phone_number,
+          :frequency => params[:frequency].to_i
+        )
+        p "User: #{@user}"
+
+        if user.verified == true
+          @phone_number = url_encode(@phone_number)
+          redirect to("/verify?phone_number=#{@phone_number}&verified=1")
+        end
+        totp = ROTP::TOTP.new("upfromhere")
+        p "TOTP: #{totp}"
+        code = totp.now
+        p code
+        user.code = code
+        user.save
+        user.send_message("Your GoodNews verification code is #{code}.")
+      end
+      erb :register
+    rescue Exception => e
+      puts e.message
+      redirect to("/?error=2")
+    end
+  end
+
+  def update_reddit
+    @reddit_client = RedditKit::Client.new ENV['REDDIT_USERNAME'], ENV['REDDIT_PW']
+    p @reddit_client.signed_in? # => true
+    red_links = @reddit_client.links 'UpliftingNews', :category => :new, :time => :all, :limit => 100
+    parse_results(red_links)
+
+    bros_links = @reddit_client.links 'HumansBeingBros', :category => :new, :time => :all, :limit => 100
+    parse_results(bros_links)
+  end
+
+  # Endpoint for verifying code was correct
+  route :get, :post, '/verify' do
+
+    phone_number = params[:phone_number]
+    code = Sanitize.clean(params[:code])
+    user = VerifiedUser.first(:phone_number => phone_number)
+
+    if user.verified == true
+      @verified = true
+    elsif user.nil? or user.code != code
+      phone_number = url_encode(phone_number)
+      redirect to("/register?phone_number=#{phone_number}&error=1")
+    else
+      user.verified = true
+      user.save
+      user.send_news()
+      begin
+        @@scheduler.interval "#{user.frequency}m" do
+          p "Scheduler trigger, supposed to be sending!!"
+          user.send_news()
+        end
+        @@scheduler.join
+      rescue Exception => e
+        puts "ERRROR ---> #{e.message}"
+      end
+    end
+    erb :verified
+  end
 end
+
+require_relative 'lib/user'
