@@ -38,6 +38,10 @@ class MyApp < Sinatra::Application
     haml :index
   end
 
+  get "/" do
+    haml :signup
+  end
+
   get "/signup" do
     haml :signup
   end
