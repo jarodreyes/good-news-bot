@@ -1,5 +1,6 @@
 $(document).ready ->
   addVerify = =>
+    $('.regButton').fadeOut(300)
     $('.verifyCode').fadeIn(300)
 
   $('#signup').submit (e) ->
@@ -28,7 +29,7 @@ $(document).ready ->
         $('.success').fadeIn(300)
         setTimeout =>
           document.location = '/success'
-        , 1000
+        , 500
       ,
       error: =>
         $('.status .alert-box').hide()

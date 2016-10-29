@@ -63,7 +63,7 @@ class MyApp < Sinatra::Application
 
   def getTheNews(phone_number)
     user = VerifiedUser.first(:phone_number => phone_number)
-    posts = Post.all
+    posts = Post.all.sort_by{rand}
 
     posts.each_with_index do |post, i|
       user_post = user.posts.get(post.id)
@@ -128,7 +128,8 @@ class MyApp < Sinatra::Application
         user.save
         user.send_message("Your GoodNews verification code is #{code}.")
       end
-      erb :register
+      status 200
+      body "success"
     rescue Exception => e
       puts e.message
       redirect to("/?error=2")
@@ -147,13 +148,15 @@ class MyApp < Sinatra::Application
 
   # Endpoint for verifying code was correct
   route :get, :post, '/verify' do
-
+    p "POST VERIFY"
     phone_number = params[:phone_number]
     code = Sanitize.clean(params[:code])
     user = VerifiedUser.first(:phone_number => phone_number)
-
+    p "USER #{user.name}"
     if user.verified == true
       @verified = true
+      status 303
+      body "verified"
     elsif user.nil? or user.code != code
       phone_number = url_encode(phone_number)
       redirect to("/register?phone_number=#{phone_number}&error=1")
@@ -161,17 +164,21 @@ class MyApp < Sinatra::Application
       user.verified = true
       user.save
       user.send_news()
-      begin
-        @@scheduler.interval "#{user.frequency}m" do
-          p "Scheduler trigger, supposed to be sending!!"
-          user.send_news()
-        end
-        @@scheduler.join
-      rescue Exception => e
-        puts "ERRROR ---> #{e.message}"
-      end
+      p "SENT NEWS"
+      # begin
+      #   p "SCHEDULING 2"
+      #   @@scheduler.every "#{user.frequency}m" do
+      #     user.send_news()
+      #   end
+      #   @@scheduler.join
+      #   p "SCHEDULING JOIN"
+      #   break
+      # rescue Exception => e
+      #   puts "ERRROR ---> #{e.message}"
+      # end
+      status 200
+      body "success"
     end
-    erb :verified
   end
 end
 

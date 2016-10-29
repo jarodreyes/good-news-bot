@@ -2,11 +2,14 @@ body {
   font-family: 'Josefin Sans', sans-serif;
   font-size: 22px;
   line-height: 24px;
-  background: url("/img/bg.jpeg") 100% -200px;
+  background: url("/img/bg.jpeg") no-repeat center center fixed;
   background-size: cover;
   position: absolute;
   min-height: 100%;
-  width: 100%; }
+  width: 100%;
+  filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/img/bg.jpeg', sizingMethod='scale');
+  z-indexms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/img/bg.jpeg', sizingMethod='scale')";
+}
 
 .logo {
   text-align: center;

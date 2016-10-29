@@ -45,7 +45,7 @@ class VerifiedUser
   def get_news
     begin
       p "get news !!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-      ps = Post.all
+      ps = Post.all.sort_by{rand}
       ps.each_with_index do |post, i|
         user_post = self.posts.get(post.id)
         p "$$$$$$$$$$$$$$$$ #{user_post} ---- #{post.id} ---- #{self.posts}"
