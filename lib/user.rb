@@ -1,6 +1,8 @@
 require 'data_mapper'
-require "twilio-ruby"
+require 'dm-validations'
+require 'twilio-ruby'
 require 'twilio-ruby/rest/messages'
+require 'phonelib'
 
 DataMapper::Logger.new(STDOUT, :debug)
 DataMapper::setup(:default, ENV['DATABASE_URL'] || 'postgres://@localhost/goodnews')
@@ -13,13 +15,22 @@ class VerifiedUser
   property :id, Serial
   property :code, String, :length => 10
   property :name, String
-  property :phone_number, String, :length => 30
+  property :phone_number, String, :length => 30, :unique => true, :required => true
   property :verified, Boolean, :default => false
   property :frequency, Integer, :default => 60
 
   has n, :posts, :through => Resource
 
   after :create, :welcome_user
+  validates_with_method :check_phone
+
+  def check_phone
+    if Phonelib.valid? @phone_number
+      return true
+    else
+      [ false, "Phone number is not a valid number." ]
+    end
+  end
 
   def send_message(msg, media=nil)
     p msg
@@ -44,11 +55,9 @@ class VerifiedUser
 
   def get_news
     begin
-      p "get news !!!!!!!!!!!!!!!!!!!!!!!!!!!!"
       ps = Post.all.sort_by{rand}
       ps.each_with_index do |post, i|
         user_post = self.posts.get(post.id)
-        p "$$$$$$$$$$$$$$$$ #{user_post} ---- #{post.id} ---- #{self.posts}"
         if user_post.nil? || i == ps.size
           self.posts << post
           self.save!

@@ -17,6 +17,7 @@ gem 'redditkit', :git => 'http://github.com/samsymons/RedditKit.rb'
 gem 'shotgun'
 
 gem 'rufus-scheduler'
+gem 'phonelib'
 
 # group :development do
 #   gem 'sqlite3'

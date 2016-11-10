@@ -1,15 +1,25 @@
 $(document).ready ->
-  addVerify = =>
+  addVerify = (e) ->
+    console.log e
     $('.regButton').fadeOut(300)
     $('.verifyCode').fadeIn(300)
 
+  showErrors = (e) ->
+    console.log "Error: #{e}"
+    $('.register-error').fadeIn(300).text(e)
+
+
   $('#signup').submit (e) ->
+    $('.register-error').fadeOut(300)
     e.preventDefault()
     $.ajax
       type: "POST",
       url: '/register',
-      data: $('#signup').serialize(),
-      success: addVerify(),
+      data: $('#signup').serialize()
+      error: (e) ->
+        showErrors(e.response)
+      success: (data) ->
+        addVerify()
     return false
 
   $('.codeSubmit').click (e) ->

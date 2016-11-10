@@ -83,6 +83,7 @@ GEM
     nokogumbo (1.4.1)
       nokogiri
     pg (0.18.2)
+    phonelib (0.6.6)
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
@@ -125,6 +126,7 @@ DEPENDENCIES
   json
   newrelic_rpm
   pg
+  phonelib
   redditkit!
   rotp
   rufus-scheduler

@@ -94,45 +94,43 @@ class MyApp < Sinatra::Application
 
   # Register a subscriber through the web and send verification code
   route :get, :post, '/register' do
+    content_type :json
     @phone_number = Sanitize.clean(params[:phone_number])
-    
-    if @phone_number.empty?
-      redirect to("/?error=1")
-    else
-      if @phone_number.length <= 10
-        string = '+1'
-        @phone_number = string + @phone_number
-      end
-    end
 
     begin
+      @phone_number = @phone_number.length <= 10 ? "+1#{@phone_number}" : @phone_number
       p "begin"
       if @error == false
-        p "Error: #{@error}"
         user = VerifiedUser.create(
           :name => params[:name],
           :phone_number => @phone_number,
           :frequency => params[:frequency].to_i
         )
-        p "User: #{@user}"
-
         if user.verified == true
           @phone_number = url_encode(@phone_number)
           redirect to("/verify?phone_number=#{@phone_number}&verified=1")
         end
         totp = ROTP::TOTP.new("upfromhere")
-        p "TOTP: #{totp}"
         code = totp.now
-        p code
         user.code = code
-        user.save
-        user.send_message("Your GoodNews verification code is #{code}.")
+        if user.save
+          user.send_message("Your GoodNews verification code is #{code}.")
+          status 200
+          body "success"
+        else
+          user.errors.each do |e|
+            puts e
+          end
+          status 404
+          body user.errors.first[0]
+        end
       end
-      status 200
-      body "success"
     rescue Exception => e
-      puts e.message
-      redirect to("/?error=2")
+      status 404
+      {
+        :success => 'false',
+        :error => e.message
+      }.to_json
     end
   end
 

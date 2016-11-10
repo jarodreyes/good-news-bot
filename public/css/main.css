@@ -15,7 +15,8 @@ body {
   text-align: center;
   display: block;
   background: url("/img/logo.png") center 30px no-repeat;
-  height: 240px; }
+  height: 240px; 
+}
 
 .button.large {
   background-color: rgba(2, 2, 41, 0.8);
