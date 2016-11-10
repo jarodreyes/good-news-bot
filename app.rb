@@ -80,14 +80,17 @@ class MyApp < Sinatra::Application
   def parse_results(list)
     list.each do |post|
       exists = Post.get(post.id)
-      img = post.image_link? ? post.url : post.thumbnail 
+      img = post.image_link? ? post.url : post.thumbnail
+      url = post.url
+      parsed_url = URI.parse(url)
+      new_url = parsed_url.scheme+"://"+parsed_url.host+parsed_url.path
       if post.over_18 == false && exists.nil?
         Post.create!(
           :id => post.id, 
           :thumbnail => img,
           :title => post.title,
           :permalink => post.permalink,
-          :url => post.url)
+          :url => new_url)
       end
     end
   end
