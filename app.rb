@@ -12,6 +12,8 @@ require "redditkit"
 require 'rufus-scheduler'
 include ERB::Util
 
+$CARTOONS = ["http://jardiohead.s3.amazonaws.com/capitols.mp3", "http://jardiohead.s3.amazonaws.com/nations.mp3", "http://jardiohead.s3.amazonaws.com/presidents.mp3", "http://jardiohead.s3.amazonaws.com/darkwing.mp3", "http://jardiohead.s3.amazonaws.com/rescue.mp3", "http://jardiohead.s3.amazonaws.com/tailspin.mp3", "http://jardiohead.s3.amazonaws.com/happy.mp3", "http://jardiohead.s3.amazonaws.com/1970s.mp3", "http://jardiohead.s3.amazonaws.com/1980s.mp3", "http://jardiohead.s3.amazonaws.com/neighbor.mp3"]
+
 
 class MyApp < Sinatra::Application
   @@scheduler = Rufus::Scheduler.new
@@ -49,6 +51,7 @@ class MyApp < Sinatra::Application
   get "/success" do
     haml :success
   end
+
   route :get, :post, '/pull-news' do 
     phone_number = Sanitize.clean(params[:From])
     user = VerifiedUser.first_or_create(:phone_number => phone_number)
@@ -58,6 +61,13 @@ class MyApp < Sinatra::Application
         m.Body "#{post.title} - #{post.url}"
         m.Media "#{post.thumbnail}"
       end
+    end.text
+  end
+
+  route :get, :post, '/easter-egg' do 
+    audio = $CARTOONS[rand(9)]
+    Twilio::TwiML::Response.new do |r|
+      r.Play audio
     end.text
   end
 
